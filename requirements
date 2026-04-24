@@ -1,1 +1,150 @@
 
+# Requirements
+
+## Python Version
+
+Recommended:
+
+```text
+Python 3.10+
+```
+
+---
+
+## Required Libraries
+
+Install the following Python libraries before running the project:
+
+```bash
+pip install pandas numpy cvxpy statsmodels arch scipy
+```
+
+---
+
+## Library Usage
+
+### pandas
+
+Used for:
+
+* reading CSV stock price data
+* handling time series data
+* return calculations
+* output formatting
+
+---
+
+### numpy
+
+Used for:
+
+* matrix operations
+* covariance construction
+* eigenvalue calculations
+* condition number analysis
+
+---
+
+### cvxpy
+
+Used for:
+
+* robust portfolio optimization
+* convex optimization problem solving
+* portfolio weight generation
+
+---
+
+### statsmodels
+
+Used for:
+
+* ARIMA model fitting
+* AIC-based model selection
+* expected return forecasting
+
+---
+
+### arch
+
+Used for:
+
+* GARCH(1,1) volatility forecasting
+* volatility clustering analysis
+
+---
+
+### scipy
+
+Used for:
+
+* optimization of cross-sector correlation parameters
+* Frobenius norm minimization for CCM construction
+
+---
+
+## Input Data Requirements
+
+CSV files must contain:
+
+* Date column
+* Price column (EQN or adjusted close)
+
+Example structure:
+
+```text
+Date, EQN
+2023-01-01, 2450.50
+2023-01-02, 2471.30
+...
+```
+
+---
+
+## Files Required
+
+Place all stock CSV files inside your project folder:
+
+```text
+main.py
+reliance2.csv
+powergrid1.csv
+ntpc1.csv
+hdfc1.csv
+icici1.csv
+sunpharma1.csv
+itc1.csv
+README.md
+```
+
+---
+
+## How to Run
+
+Simply execute:
+
+```bash
+python main.py
+```
+
+The program will generate:
+
+* ARIMA expected returns
+* GARCH volatility forecasts
+* Correlation matrix (CCM)
+* Robust portfolio weights
+* Condition Numbers (1, 2, 3)
+* Out-of-sample performance metrics
+* Sharpe Ratio analysis
+
+---
+
+## Recommended Future Upgrade
+
+For stronger expected return estimation, ARIMA should be replaced with:
+
+```text
+Black-Litterman Expected Return Framework
+```
+
+to improve portfolio stability and reduce mean estimation error.
