@@ -16,6 +16,7 @@ This is a well-known issue in portfolio theory:
 Mean estimation error dominates portfolio optimization.
 
 Even when volatility and covariance estimation are relatively stable, inaccurate expected returns can lead to unrealistic asset allocation decisions.
+*** and i am manually giving inputs to model for intra sector correlations  which needs to be modelled too.
 
 Despite this limitation, the model performs significantly better than a traditional Mean-Variance Optimization (MVO) framework because it focuses strongly on:
 
