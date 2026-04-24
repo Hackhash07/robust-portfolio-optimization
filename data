@@ -1,1 +1,137 @@
 
+# Data Requirements
+
+## Input Dataset
+
+This project uses historical daily stock price data for multiple assets across different sectors.
+
+Current assets used:
+
+* Reliance
+* Power Grid
+* NTPC
+* HDFC Bank
+* ICICI Bank
+* Sun Pharma
+* ITC
+
+These are grouped into sector clusters for Correlation Matrix Modeling (CCM).
+
+---
+
+## Required CSV Format
+
+Each CSV file must contain at least:
+
+### 1. Date Column
+
+Used for time-series indexing.
+
+Example:
+
+```text id="f2k7as"
+Date
+```
+
+---
+
+### 2. Price Column
+
+Used for return calculation.
+
+The code currently detects columns containing:
+
+```text id="2zjlwm"
+EQN
+```
+
+so the adjusted closing price / closing price column should contain this naming pattern.
+
+Example:
+
+```text id="mqxwju"
+EQN Price
+```
+
+or
+
+```text id="gf9v7d"
+EQN
+```
+
+---
+
+## Example CSV Structure
+
+```text id="fh0vll"
+Date,EQN
+2023-01-01,2450.50
+2023-01-02,2471.30
+2023-01-03,2438.10
+...
+```
+
+---
+
+## Data Preprocessing
+
+The model automatically performs:
+
+* column name cleaning
+* date conversion using pandas datetime
+* date indexing
+* log return calculation
+
+using:
+
+$$
+r_t = \ln\left(\frac{P_t}{P_{t-1}}\right)
+$$
+
+r_t = \ln\left(\frac{P_t}{P_{t-1}}\right)
+
+---
+
+## Train-Test Split
+
+The dataset is divided into:
+
+* 70% Training Data
+* 30% Testing Data
+
+Where:
+
+### Training Data is used for:
+
+* ARIMA fitting
+* GARCH volatility forecasting
+* Correlation Matrix construction
+* Robust Optimization
+
+### Testing Data is used for:
+
+* out-of-sample validation
+* portfolio performance measurement
+* Sharpe ratio evaluation
+
+---
+
+## Important Notes
+
+* Missing values should be removed before use
+* Data should be aligned across all assets
+* Same date frequency should be maintained
+* Prefer daily adjusted closing prices for better consistency
+
+---
+
+## Future Improvement
+
+The model can be further improved by adding:
+
+* benchmark index data (like NIFTY 50)
+* sector index returns
+* macroeconomic factors
+* factor model inputs for Black-Litterman implementation
+
+This will improve expected return estimation significantly.
