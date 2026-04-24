@@ -1,1 +1,30 @@
+This project uses ARIMA for expected return estimation and GARCH for volatility forecasting as part of the Robust Portfolio Optimization framework.
 
+However, stock prices are inherently noisy, highly dynamic, and influenced by multiple unpredictable market factors. Because of this, there is significant inefficiency in accurately estimating both expected returns and individual stock volatilities.
+
+The major limitation of the current model lies in expected return estimation.
+
+ARIMA-based return forecasts often struggle because:
+
+stock returns have weak predictability
+short-term market noise dominates price movement
+regime shifts are difficult to capture using linear time-series models
+small estimation errors in expected returns can create large distortions in portfolio weights
+
+This is a well-known issue in portfolio theory:
+
+Mean estimation error dominates portfolio optimization.
+
+Even when volatility and covariance estimation are relatively stable, inaccurate expected returns can lead to unrealistic asset allocation decisions.
+
+Despite this limitation, the model performs significantly better than a traditional Mean-Variance Optimization (MVO) framework because it focuses strongly on:
+
+GARCH-based volatility forecasting
+structured correlation matrix modeling (CCM)
+robust optimization under uncertainty
+covariance stability through condition number analysis
+out-of-sample performance validation
+
+This makes the portfolio more stable, more realistic, and better prepared for stressed market conditions compared to standard MVO.
+
+The next major improvement planned for this project is replacing ARIMA-based expected return estimation with the Black-Litterman framework, which can provide more stable, economically meaningful, and institutionally robust expected returns.
