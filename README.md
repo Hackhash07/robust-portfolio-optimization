@@ -1,275 +1,129 @@
+Robust Portfolio Optimization using ARIMA, GARCH, CCM and Robust Optimization
 
+This project is about building a portfolio that is not only designed to earn good returns, but is also able to remain stable when the estimates used by the model are wrong.
 
-# Robust Portfolio Optimization using ARIMA, GARCH, CCM and Robust Optimization
+Traditional portfolio optimization can be very sensitive to small changes in expected returns and risk estimates. Because of this, even a small forecasting error can sometimes lead to very different portfolio weights.
 
-This project implements a Robust Portfolio Optimization framework inspired by the research paper:
+So, in this project, I combine several methods to make the portfolio more reliable.
 
-**“A Practical Guide to Robust Portfolio Optimization”**
-by C. Yin, R. Perchet & F. Soupé 
+What the project does
 
-The objective is to construct a stable and risk-aware portfolio by improving covariance estimation, reducing optimization sensitivity, and stress-testing the portfolio under uncertain market conditions.
+I start by collecting historical price data for stocks from different sectors. I convert the price data into daily returns and divide the data into two parts: one part is used to build the model and the other part is kept aside to test how well the model actually performs.
 
-Rather than relying only on traditional Markowitz optimization, this model integrates:
+Expected returns using ARIMA
 
-* ARIMA-based expected return estimation
-* GARCH(1,1) volatility forecasting
-* Sector-based Correlation Matrix Modeling (CCM)
-* Robust Optimization with uncertainty penalty
-* Condition Number analysis for covariance stability
-* Out-of-sample testing
-* Crash scenario robustness evaluation
+For each stock, I use ARIMA to forecast its expected return.
 
----
+The idea is to look at the historical behavior of each stock and use that information to estimate what its return might look like in the near future.
 
-# Project Motivation
+I test different ARIMA models and select the one that performs best according to the model selection criteria.
 
-Classical Mean-Variance Optimization is highly sensitive to estimation errors, especially in expected returns (μ). Even small forecasting errors can lead to unstable and unrealistic portfolio weights.
+These forecasts are then given to the portfolio optimizer.
 
-This project focuses on improving portfolio robustness by:
+Volatility using GARCH
 
-* stabilizing covariance structure
-* modeling sector relationships explicitly
-* penalizing uncertainty in optimization
-* testing portfolio behavior under stressed market conditions
+Instead of assuming that a stock always has the same level of risk, I use GARCH to forecast volatility.
 
-The goal is not only high return, but also portfolio stability and reliability.
+This is useful because financial markets usually experience periods of high volatility followed by high volatility, and calm periods followed by relatively calm periods.
 
----
+GARCH helps the model capture this changing risk over time.
 
-# Methodology
+Correlation using CCM
 
-## 1. Data Preparation
+The next part is the correlation structure.
 
-Historical stock price data is collected for multiple assets across different sectors:
+Instead of directly trusting the historical correlations between all the stocks, I create a more structured correlation matrix based on the relationships between sectors.
 
-* Energy / Utilities
-* Banking / Financials
-* Pharma / FMCG
+For example, stocks operating in the same sector can be expected to behave more similarly, while stocks from very different sectors may have weaker relationships.
 
-Log returns are computed using:
+This helps reduce noise in the correlation estimates and makes the covariance matrix more stable.
 
-[
-r_t = \ln\left(\frac{P_t}{P_{t-1}}\right)
-]
+Robust optimization
 
-The dataset is divided into:
+Once the expected returns, volatility and correlations are estimated, I use robust optimization to determine the portfolio weights.
 
-* 70% Training Data
-* 30% Testing Data
+The important difference compared with traditional optimization is that I do not assume that my estimates are perfectly accurate.
 
-for proper out-of-sample validation.
+The model adds a penalty for uncertainty.
 
----
+So, if a portfolio looks attractive only because of an uncertain estimate, the optimizer becomes more cautious about giving that portfolio a large weight.
 
-## 2. Expected Return Estimation (Current Approach)
+The parameter controlling this penalty is called kappa.
 
-Expected returns are currently estimated using:
+A small kappa means the model behaves more like a normal optimizer.
 
-## ARIMA (AutoRegressive Integrated Moving Average)
+A larger kappa means the model becomes more conservative and places more importance on uncertainty.
 
-For each asset:
+Condition number analysis
 
-* AIC-based grid search selects the best ARIMA(p,0,q)
-* One-step forecast is used as expected return
+I also analyze the condition number of the covariance matrix.
 
-This provides the vector:
+The purpose is to check whether the covariance matrix is stable or whether it is close to becoming singular.
 
-[
-\mu = [\mu_1, \mu_2, ..., \mu_n]
-]
+This matters because an unstable covariance matrix can make optimization extremely sensitive to small changes in the data.
 
----
+So this part is basically a diagnostic step to understand how reliable the risk estimates are before using them in optimization.
 
-## 3. Volatility Forecasting
+Out-of-sample testing
 
-Volatility is estimated using:
+After building the portfolio using the training data, I test it on completely unseen data.
 
-## GARCH(1,1)
+I look at things like:
 
-This captures:
+average return
+volatility
+Sharpe ratio
 
-* volatility clustering
-* heteroskedasticity
-* time-varying market risk
+The important point is that the test data was not used while constructing the portfolio.
 
-which is significantly more realistic than using simple historical standard deviation.
+This gives a better idea of whether the strategy actually works or whether it only looked good on historical data.
 
----
+Main finding
 
-## 4. Correlation Matrix Construction (CCM)
+The biggest thing I have observed so far is that expected return estimation is the most problematic part of the model.
 
-Instead of using raw sample correlation directly, the model builds a structured correlation matrix:
+The ARIMA forecasts sometimes do not match the actual performance of the stocks afterward.
 
-### Intra-sector correlation:
+For example, a stock may receive a large allocation because the model predicts a strong future return, but the stock may later perform poorly.
 
-fixed using domain assumptions
+This shows that even if the risk model is reasonably good, inaccurate expected return forecasts can still produce poor portfolio allocations.
 
-### Cross-sector correlation:
+That is probably the most important lesson from the project.
 
-optimized using Frobenius norm minimization
+Current limitation
 
-This improves covariance stability and reduces noise in estimation.
+The main weakness of the current framework is ARIMA-based expected returns.
 
-The covariance matrix becomes:
+ARIMA works well for many traditional time-series problems, but financial markets are much more complicated.
 
-[
-\Sigma = D \cdot C \cdot D
-]
+Market behavior can change because of:
 
-where:
+economic conditions
+market regimes
+unexpected news
+investor sentiment
+sudden volatility
 
-* D = volatility matrix
-* C = correlation matrix
+Because of this, a short-term statistical forecast can sometimes be unreliable.
 
----
+Planned improvement: Black-Litterman
 
-## 5. Robust Optimization
+The next major improvement is to introduce Black-Litterman for expected returns.
 
-Portfolio weights are obtained using robust optimization:
+Instead of depending completely on ARIMA forecasts, Black-Litterman allows the model to combine a market-based expected return with specific views about individual assets.
 
-[
-\max_w \left(
-\mu^T w
+The main advantage is that it should produce more stable expected returns and reduce the extreme allocations that can occur when the optimizer trusts noisy forecasts too much.
 
-* \lambda w^T \Sigma w
-* k \sqrt{w^T \Omega w}
-  \right)
-  ]
+So the project will eventually move toward:
 
-where:
+Black-Litterman for expected returns + GARCH for volatility + CCM for correlations + Robust Optimization for portfolio construction.
 
-* Ω represents uncertainty matrix
-* k controls robustness penalty
+Final takeaway
 
-This reduces sensitivity to estimation errors and improves allocation stability.
+The main lesson from this project is:
 
----
+The optimizer itself is not necessarily the main problem. The quality of the inputs given to the optimizer is.
 
-## 6. Condition Number Analysis
+Even a mathematically well-designed optimization model can produce a bad portfolio if the expected returns are poor.
 
-Three condition numbers are calculated:
-
-* Condition Number 1 → λ₁ / λₙ
-* Condition Number 2 → λ₁ / λₙ₋₁
-* Condition Number 3 → λ₁ / λₙ₋₂
-
-These help evaluate:
-
-* covariance matrix stability
-* near-singularity issues
-* robustness of optimization inputs
-
----
-
-## 7. Out-of-Sample Testing
-
-The optimized portfolio is evaluated on unseen test data using:
-
-* Mean Return
-* Annualized Volatility
-* Sharpe Ratio
-
-This ensures the model performs beyond the training sample.
-
----
-
-# Key Observation
-
-The most important finding from this project is:
-
-## Mean estimation error dominates portfolio optimization
-
-ARIMA-based expected return forecasts often showed inconsistencies with realized stock performance (measured using Sharpe ratios).
-
-This means:
-
-* assets with poor realized performance sometimes received large positive weights
-* optimization became highly sensitive to noisy return forecasts
-
-This validates a well-known result in portfolio theory:
-
-> Expected return estimation is much harder than volatility and covariance estimation.
-
----
-
-# Current Limitation
-
-## ARIMA-based Expected Returns Need Improvement
-
-While ARIMA helps generate expected returns, it has important limitations:
-
-* assumes linear time-series behavior
-* sensitive to short-term market noise
-* weak under regime shifts
-* may produce unrealistic directional forecasts
-
-In several cases, ARIMA predictions did not align with realized Sharpe ratios, leading to unstable allocations.
-
-This is currently the weakest part of the model.
-
----
-
-# Future Improvement
-
-## Black-Litterman Framework (Major Upgrade)
-
-The next major improvement planned for this project is replacing raw ARIMA forecasts with:
-
-# Black-Litterman Expected Return Estimation
-
-Why?
-
-Because Black-Litterman:
-
-* reduces mean estimation error
-* combines market equilibrium with investor views
-* produces more stable expected returns
-* avoids extreme portfolio weights
-* improves economic interpretability
-
-This would significantly improve portfolio quality and move the model closer to institutional-grade portfolio construction.
-
-Instead of:
-
-```text
-Pure ARIMA Forecasts
-```
-
-the model will evolve toward:
-
-```text
-Black-Litterman + Robust Optimization + GARCH + CCM
-```
-
-which is far more reliable for real-world portfolio management.
-
----
-
-# Additional Future Improvements
-
-* Factor-based expected return models
-* Transaction cost modeling
-* Liquidity constraints
-
----
-
-# Final Conclusion
-
-This project demonstrates that:
-
-## Robust covariance estimation is often more valuable than aggressive return forecasting
-
-By focusing on:
-
-* GARCH volatility
-* structured correlations
-* robust optimization
-* stress testing
-
-the portfolio becomes more stable and realistic.
-
-The strongest lesson from this work is:
-
-> Bad expected returns create bad portfolios.
-
-Future development using Black-Litterman will address this directly and significantly improve the overall model quality.
+That is why my next focus is improving the expected return estimation rather than simply making the optimizer more complicated.
